@@ -37,12 +37,16 @@ namespace alposim.Repository
         
         public async Task<IEnumerable<Sale>> GetSales()
         {
-            return await _context.Sales.ToListAsync();
+            return await _context.Sales
+                .Include(s => s.Items)
+                .ToListAsync();
         }
 
         public async Task<Sale> GetSaleById(Guid id)
         {
-            return await _context.Sales.FindAsync(id);
+            return await _context.Sales
+                .Include(s => s.Items)
+                .FirstOrDefaultAsync(s => s.Id == id);
         }
         
         public async Task<IEnumerable<Sale>> GetSalesFromDateRange(DateTime startDate, DateTime endDate)
@@ -104,11 +108,17 @@ namespace alposim.Repository
                 .FirstOrDefaultAsync(s => s.Id == saleId);
         
             if (sale == null) throw new KeyNotFoundException($"Sale {saleId} not found");
+            
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == saleItem.ProductId);
+            if (product == null) throw new KeyNotFoundException($"Product {saleItem.ProductId} not found");
 
-            saleItem.SaleId = saleId;  
+            saleItem.SaleId = saleId;
+            saleItem.RetailPrice = product.OriginalPrice;
+            saleItem.UnitPrice = product.SellingPrice;
+            saleItem.TotalPrice = product.SellingPrice * saleItem.Quantity;            
             sale.Items.Add(saleItem);
             sale.TotalPrice = sale.Items.Sum(i => i.TotalPrice); 
-
+            
             await _context.SaveChangesAsync();
         }
 
@@ -119,7 +129,9 @@ namespace alposim.Repository
                 .FirstOrDefaultAsync(s => s.Id == saleId);
 
             if (sale == null) throw new KeyNotFoundException($"Sale {saleId} not found");
+            
             var saleItem = sale.Items.FirstOrDefault(i => i.Id == saleItemId);
+            
             if (saleItem == null) throw new KeyNotFoundException($"Sale Item {saleItemId} not found");
             sale.Items.Remove(saleItem);
             sale.TotalPrice = sale.Items.Sum(i => i.TotalPrice);
@@ -135,9 +147,11 @@ namespace alposim.Repository
             
             
             if (sale == null) throw new KeyNotFoundException($"Sale {saleId} not found");
-            var saleItem = sale.Items.FirstOrDefault(i => i.Id == saleId);
-            if (saleItem == null) throw new KeyNotFoundException($"Sale Item {saleId} not found");
+            var saleItem = sale.Items.FirstOrDefault(i => i.Id == saleItemId);
+            
+            if (saleItem == null) throw new KeyNotFoundException($"Sale Item {saleItemId} not found");
             saleItem.Quantity = quantity;
+            saleItem.TotalPrice = saleItem.Quantity * saleItem.UnitPrice;
             sale.TotalPrice = sale.Items.Sum(i => i.TotalPrice);
             
             await _context.SaveChangesAsync();

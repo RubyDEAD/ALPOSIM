@@ -61,7 +61,8 @@ namespace alposim.Repository
             existingProduct.Name = product.Name;
             existingProduct.ImageUrl = product.ImageUrl;
             existingProduct.Quantity = product.Quantity;
-            existingProduct.Price = product.Price;
+            existingProduct.OriginalPrice = product.OriginalPrice;
+            existingProduct.SellingPrice = product.SellingPrice;
             existingProduct.Metric = product.Metric;
             existingProduct.UpdatedAt = DateTime.UtcNow;
 

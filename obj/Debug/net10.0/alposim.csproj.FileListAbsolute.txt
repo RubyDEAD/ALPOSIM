@@ -141,3 +141,4 @@
 /Users/reitzdaveandriano/alposim/bin/Debug/net10.0/Swashbuckle.AspNetCore.SwaggerGen.dll
 /Users/reitzdaveandriano/alposim/bin/Debug/net10.0/Swashbuckle.AspNetCore.SwaggerUI.dll
 /Users/reitzdaveandriano/alposim/bin/Debug/net10.0/AutoMapper.dll
+/Users/reitzdaveandriano/alposim/obj/Debug/net10.0/alposim.sourcelink.json

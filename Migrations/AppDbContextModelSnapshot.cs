@@ -43,7 +43,7 @@ namespace alposim.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<decimal>("Price")
+                    b.Property<decimal>("OriginalPrice")
                         .HasColumnType("numeric");
 
                     b.Property<string>("ProductCode")
@@ -52,6 +52,9 @@ namespace alposim.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("SellingPrice")
+                        .HasColumnType("numeric");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -76,6 +79,9 @@ namespace alposim.Migrations
                     b.Property<bool?>("OnlinePayment")
                         .HasColumnType("boolean");
 
+                    b.Property<decimal>("ReceivedCash")
+                        .HasColumnType("numeric");
+
                     b.Property<string>("SaleCode")
                         .IsRequired()
                         .HasColumnType("text");
@@ -99,6 +105,9 @@ namespace alposim.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("RetailPrice")
+                        .HasColumnType("numeric");
 
                     b.Property<Guid>("SaleId")
                         .HasColumnType("uuid");
