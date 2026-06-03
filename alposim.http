@@ -1,0 +1,48 @@
+@alposim_HostAddress = http://localhost:5181
+
+GET {{alposim_HostAddress}}/weatherforecast/
+Accept: application/json
+
+
+### Get All Products
+GET {{alposim_HostAddress}}/api/product
+Accept: application/json
+
+###
+
+### Get Product by ID
+GET {{alposim_HostAddress}}/api/product/YOUR-GUID-HERE
+Accept: application/json
+
+###
+
+### Create Product
+POST {{alposim_HostAddress}}/api/product
+Content-Type: application/json
+
+{
+  "name": "Sample Product",
+  "price": 9.99,
+  "description": "A test product"
+}
+
+###
+
+### Update Product
+PUT {{alposim_HostAddress}}/api/product/YOUR-GUID-HERE
+Content-Type: application/json
+
+{
+  "name": "Updated Product",
+  "price": 14.99,
+  "description": "An updated product"
+}
+
+###
+
+### Delete Product
+DELETE {{alposim_HostAddress}}/api/product/YOUR-GUID-HERE
+Accept: application/json
+
+###
+

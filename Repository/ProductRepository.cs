@@ -1,0 +1,101 @@
+using alposim.Models;
+using alposim.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using alposim.Data;
+
+namespace alposim.Repository
+{
+    public class ProductRepository : IProductRepository
+    {
+        private readonly AppDbContext _context;
+        public ProductRepository(AppDbContext context)
+        {
+            _context = context;
+        }
+        private async Task<string> GenerateProductCodeAsync()
+        {
+            var yearPart = DateTime.UtcNow.ToString("yy");
+            var lastProduct = await _context.Products
+                .Where(p => !string.IsNullOrEmpty(p.ProductCode) && p.ProductCode.StartsWith($"PRD-{yearPart}-"))
+                .OrderByDescending(p => p.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            int lastCodeNumber = 0;
+            if (lastProduct != null)
+            {
+                var codeParts = lastProduct.ProductCode.Split('-');
+                if (codeParts.Length == 3 && int.TryParse(codeParts[2], out int parsedNumber))
+                {
+                    lastCodeNumber = parsedNumber;
+                }
+            }
+
+            return $"PRD-{yearPart}-{lastCodeNumber + 1:D2}";
+        }
+        public async Task<IEnumerable<Product>> GetAllProductsAsync()
+        {
+            return await _context.Products.ToListAsync();
+        }
+
+        public async Task<Product> GetProductByIdAsync(Guid id)
+        {
+            return await _context.Products.FindAsync(id);
+        }
+
+        public async Task<Product> CreateProductAsync(Product product)
+        {
+            var productCode = await GenerateProductCodeAsync();
+            product.ProductCode = productCode;
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+            return product;
+        }
+
+        public async Task<Product> UpdateProductAsync(Guid id, Product product)
+        {
+            var existingProduct = await _context.Products.FindAsync(id);
+            if (existingProduct == null)
+            {
+                return null;
+            }
+            existingProduct.Name = product.Name;
+            existingProduct.ImageUrl = product.ImageUrl;
+            existingProduct.Quantity = product.Quantity;
+            existingProduct.Price = product.Price;
+            existingProduct.Metric = product.Metric;
+            existingProduct.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return existingProduct;
+
+        }
+
+        public async Task<Product> DeleteProductAsync(Guid id)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null) return null;
+
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+    
+            return product;
+            
+        }
+
+        public async Task<(IEnumerable<Product> Items, int TotalCount)> GetProductsPageAsync(int page, int limit)
+        {
+            var query = _context.Products.AsQueryable();
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderBy(p => p.CreatedAt)
+                .Skip((page - 1) * limit)
+                .Take(limit)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
+    }
+
+}

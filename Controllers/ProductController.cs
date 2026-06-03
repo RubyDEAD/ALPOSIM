@@ -1,0 +1,71 @@
+using Microsoft.AspNetCore.Mvc;
+using alposim.Models;
+using alposim.Interfaces;
+using alposim.Repository;
+namespace alposim.Controllers  
+{
+    [Route("api/[controller]")]
+    [ApiController]
+
+    public class ProductController : Controller
+    {   
+        private readonly IProductRepository productRepository;
+        public ProductController(IProductRepository productRepository)
+        {
+            this.productRepository = productRepository;
+        }
+
+        [HttpGet]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<Product>))]
+        public async Task<IActionResult> GetProducts()
+        {  
+            var products = await productRepository.GetAllProductsAsync();
+            return Ok(products);
+        }
+        [HttpGet("{id}")]
+        [ProducesResponseType(200, Type = typeof(Product))]
+        public async Task<IActionResult> GetProductById(Guid id)
+        {
+            var prod = await productRepository.GetProductByIdAsync(id);
+            if (prod == null) return NotFound();
+
+
+            return Ok(prod);
+        }
+        [HttpPost]
+        [ProducesResponseType(201, Type = typeof(Product))]
+        public async Task<IActionResult> CreateProduct([FromBody] Product product)
+        {
+
+            if(!ModelState.IsValid || product == null)
+            {
+                return BadRequest(ModelState);
+            }
+            var prod = await productRepository.CreateProductAsync(product);
+
+            return CreatedAtAction(nameof(GetProductById), new { id = prod.Id}, prod);
+        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] Product product)
+        {
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var updatedProduct = await productRepository.UpdateProductAsync(id, product);
+            if (updatedProduct == null) return NotFound();
+
+           
+            return Ok(updatedProduct);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProduct(Guid id)
+        {
+            var deletedProduct = await productRepository.DeleteProductAsync(id);
+            if (deletedProduct == null) return NotFound();
+
+            return Ok(deletedProduct);
+        }
+    }
+}
