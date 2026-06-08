@@ -8,10 +8,12 @@ public class AppDbContext : DbContext
     {
         
     }
+    
+    //tables
     public DbSet<Product> Products {get; set;}
     public DbSet<Sale> Sales {get; set;}
     public DbSet<SaleItem> SaleItems {get; set;}
-
+    public DbSet<User> Users {get; set;}
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
 
@@ -28,6 +30,11 @@ public class AppDbContext : DbContext
             .HasForeignKey(si => si.SaleId)
             .OnDelete(DeleteBehavior.Cascade);
         
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
     }
 }
 }

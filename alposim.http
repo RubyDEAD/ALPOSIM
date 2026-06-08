@@ -46,3 +46,110 @@ Accept: application/json
 
 ###
 
+### Get All Sales
+GET {{alposim_HostAddress}}/api/sale
+Accept: application/json
+
+###
+
+### Get Sale by ID
+GET {{alposim_HostAddress}}/api/sale/YOUR-GUID-HERE
+Accept: application/json
+
+###
+
+### Get Sales by Date Range
+GET {{alposim_HostAddress}}/api/sale/range?startDate=2026-06-01&endDate=2026-06-30
+Accept: application/json
+
+###
+
+### Get Sales by Payment Status (Paid)
+GET {{alposim_HostAddress}}/api/sale/payment?payment=true
+Accept: application/json
+
+###
+
+### Get Sales by Payment Status (Unpaid)
+GET {{alposim_HostAddress}}/api/sale/payment?payment=false
+Accept: application/json
+
+###
+
+### Create Sale
+POST {{alposim_HostAddress}}/api/sale
+Content-Type: application/json
+
+{
+  "saleDate": "2026-06-08T15:30:00",
+  "totalAmount": 1000.00,
+  "payment": true
+}
+
+###
+
+### Update Sale
+PUT {{alposim_HostAddress}}/api/sale/YOUR-GUID-HERE
+Content-Type: application/json
+
+{
+  "saleDate": "2026-06-08T15:30:00",
+  "totalAmount": 1500.00,
+  "payment": true
+}
+
+###
+
+### Delete Sale
+DELETE {{alposim_HostAddress}}/api/sale/YOUR-GUID-HERE
+Accept: application/json
+
+###
+
+### Get Daily Report
+GET {{alposim_HostAddress}}/api/report/daily?date=2026-06-08
+Accept: application/json
+
+###
+
+### Get Weekly Report
+GET {{alposim_HostAddress}}/api/report/weekly?month=6&year=2026
+Accept: application/json
+
+###
+
+### Get Monthly Report
+GET {{alposim_HostAddress}}/api/report/monthly?year=2026
+Accept: application/json
+
+###
+
+### Get Yearly Report
+GET {{alposim_HostAddress}}/api/report/yearly
+Accept: application/json
+
+###
+
+### Add Item to Sale
+POST {{alposim_HostAddress}}/api/sale/GUID-HERE/items
+Content-Type: application/json
+
+{
+  "productId": "YOUR-PRODUCT-GUID",
+  "quantity": 2
+}
+
+### Remove Item from Sale
+DELETE {{alposim_HostAddress}}/api/sale/GUID-HERE/items/ITEM-GUID-HERE
+
+### Update Item Quantity
+PATCH {{alposim_HostAddress}}/api/sale/GUID-HERE/items/ITEM-GUID-HERE
+Content-Type: application/json
+
+{
+  "quantity": 5
+}
+
+
+
+

@@ -10,5 +10,6 @@ public class MappingProfiles : Profile
     {
         CreateMap<ProductRequestDto, Product>();
         CreateMap<SaleRequestDto, Sale>();
+        
     }
 }  

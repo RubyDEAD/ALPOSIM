@@ -1,5 +1,6 @@
 using alposim.Interfaces;
 using alposim.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace alposim.Controllers
@@ -17,6 +18,7 @@ namespace alposim.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Employee")] // for the meantime
         [ProducesResponseType(typeof(IEnumerable<Sale>), 200)]
         public async Task<IActionResult> GetSales()
         {
@@ -28,6 +30,7 @@ namespace alposim.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Employee")] // for the meantime
         [ProducesResponseType(typeof(Sale), 200)]
         public async Task<IActionResult> GetSalebyId(Guid id)
         {
@@ -37,6 +40,7 @@ namespace alposim.Controllers
         }
 
         [HttpGet("range")]
+        [Authorize(Roles = "Admin,Employee")] // for the meantime
         [ProducesResponseType(typeof(IEnumerable<Sale>), 200)]
         public async Task<IActionResult> GetSales(DateTime startDate, DateTime endDate)
         {
@@ -46,6 +50,7 @@ namespace alposim.Controllers
         }
 
         [HttpGet("payment")]
+        [Authorize(Roles = "Admin,Employee")] // for the meantime
         [ProducesResponseType(typeof(Sale), 200)]
         public async Task<IActionResult> GetSalesByPayment(bool payment)
         {
@@ -55,6 +60,7 @@ namespace alposim.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Employee")] // for the meantime
         [ProducesResponseType(typeof(Sale), 201)]
         public async Task<IActionResult> AddSale(Sale sale)
         {
@@ -65,6 +71,7 @@ namespace alposim.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Employee")] // for the meantime
         [ProducesResponseType(typeof(Sale), 200)]
         public async Task<IActionResult> UpdateSale(Guid id, [FromBody] Sale sale)
         {
@@ -76,6 +83,7 @@ namespace alposim.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Employee")] // for the meantime
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]        
         public async Task<ActionResult> RemoveSale(Guid id)

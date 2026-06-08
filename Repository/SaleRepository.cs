@@ -103,6 +103,8 @@ namespace alposim.Repository
 
         public async Task AddItemAsync(Guid saleId, SaleItem saleItem)
         {
+            
+            
             var sale = await _context.Sales
                 .Include(s => s.Items)
                 .FirstOrDefaultAsync(s => s.Id == saleId);
@@ -111,12 +113,15 @@ namespace alposim.Repository
             
             var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == saleItem.ProductId);
             if (product == null) throw new KeyNotFoundException($"Product {saleItem.ProductId} not found");
-
+            if (product.Quantity < saleItem.Quantity)
+                throw new InvalidOperationException($"Insufficient stock for {product.Name}");
+            
             saleItem.SaleId = saleId;
             saleItem.RetailPrice = product.OriginalPrice;
             saleItem.UnitPrice = product.SellingPrice;
             saleItem.TotalPrice = product.SellingPrice * saleItem.Quantity;            
             sale.Items.Add(saleItem);
+            product.Quantity -= saleItem.Quantity;
             sale.TotalPrice = sale.Items.Sum(i => i.TotalPrice); 
             
             await _context.SaveChangesAsync();
@@ -131,9 +136,13 @@ namespace alposim.Repository
             if (sale == null) throw new KeyNotFoundException($"Sale {saleId} not found");
             
             var saleItem = sale.Items.FirstOrDefault(i => i.Id == saleItemId);
-            
             if (saleItem == null) throw new KeyNotFoundException($"Sale Item {saleItemId} not found");
+
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == saleItem.ProductId);
+            if (product == null) throw new KeyNotFoundException($"Product Not Found");
+
             sale.Items.Remove(saleItem);
+            product.Quantity += saleItem.Quantity;
             sale.TotalPrice = sale.Items.Sum(i => i.TotalPrice);
             
             await _context.SaveChangesAsync();
@@ -148,8 +157,16 @@ namespace alposim.Repository
             
             if (sale == null) throw new KeyNotFoundException($"Sale {saleId} not found");
             var saleItem = sale.Items.FirstOrDefault(i => i.Id == saleItemId);
-            
             if (saleItem == null) throw new KeyNotFoundException($"Sale Item {saleItemId} not found");
+
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == saleItem.ProductId);
+            if (product == null) throw new KeyNotFoundException($"Product Not Found");
+
+            var difference = quantity - saleItem.Quantity;
+            
+            if(difference > 0 && product.Quantity < difference) throw new InvalidOperationException($"Insufficient stock for {product.Name}");
+
+            product.Quantity -= difference;
             saleItem.Quantity = quantity;
             saleItem.TotalPrice = saleItem.Quantity * saleItem.UnitPrice;
             sale.TotalPrice = sale.Items.Sum(i => i.TotalPrice);

@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using alposim.Models;
 using alposim.Interfaces;
 using alposim.Repository;
+using Microsoft.AspNetCore.Authorization;
+
 namespace alposim.Controllers  
 {
     [Route("api/[controller]")]
@@ -16,6 +18,7 @@ namespace alposim.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Employee")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Product>))]
         public async Task<IActionResult> GetProducts()
         {  
@@ -23,6 +26,7 @@ namespace alposim.Controllers
             return Ok(products);
         }
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Employee")]
         [ProducesResponseType(200, Type = typeof(Product))]
         public async Task<IActionResult> GetProductById(Guid id)
         {
@@ -33,6 +37,7 @@ namespace alposim.Controllers
             return Ok(prod);
         }
         [HttpPost]
+        [Authorize(Roles = "Admin,Employee")]
         [ProducesResponseType(201, Type = typeof(Product))]
         public async Task<IActionResult> CreateProduct([FromBody] Product product)
         {
@@ -46,6 +51,7 @@ namespace alposim.Controllers
             return CreatedAtAction(nameof(GetProductById), new { id = prod.Id}, prod);
         }
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Employee")]
         public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] Product product)
         {
             if(!ModelState.IsValid)
@@ -60,6 +66,7 @@ namespace alposim.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Employee")]
         public async Task<IActionResult> DeleteProduct(Guid id)
         {
             var deletedProduct = await productRepository.DeleteProductAsync(id);
