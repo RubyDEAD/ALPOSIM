@@ -1,24 +1,49 @@
 @alposim_HostAddress = http://localhost:5181
 
+
 GET {{alposim_HostAddress}}/weatherforecast/
 Accept: application/json
 
 
+### Login
+# @name login
+POST {{alposim_HostAddress}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "username": "test123",
+  "password": "test123"
+}
+
+###
+
+@token = {{login.response.body}}
+
+
+### Register
+POST {{alposim_HostAddress}}/api/Auth/register
+Accept: application/json
+
+###
+
 ### Get All Products
 GET {{alposim_HostAddress}}/api/product
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
 ### Get Product by ID
 GET {{alposim_HostAddress}}/api/product/YOUR-GUID-HERE
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
 ### Create Product
 POST {{alposim_HostAddress}}/api/product
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "name": "Sample Product",
@@ -31,6 +56,7 @@ Content-Type: application/json
 ### Update Product
 PUT {{alposim_HostAddress}}/api/product/YOUR-GUID-HERE
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "name": "Updated Product",
@@ -43,42 +69,49 @@ Content-Type: application/json
 ### Delete Product
 DELETE {{alposim_HostAddress}}/api/product/YOUR-GUID-HERE
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
 ### Get All Sales
 GET {{alposim_HostAddress}}/api/sale
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
 ### Get Sale by ID
 GET {{alposim_HostAddress}}/api/sale/YOUR-GUID-HERE
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
 ### Get Sales by Date Range
 GET {{alposim_HostAddress}}/api/sale/range?startDate=2026-06-01&endDate=2026-06-30
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
 ### Get Sales by Payment Status (Paid)
 GET {{alposim_HostAddress}}/api/sale/payment?payment=true
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
 ### Get Sales by Payment Status (Unpaid)
 GET {{alposim_HostAddress}}/api/sale/payment?payment=false
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
 ### Create Sale
 POST {{alposim_HostAddress}}/api/sale
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "saleDate": "2026-06-08T15:30:00",
@@ -91,6 +124,7 @@ Content-Type: application/json
 ### Update Sale
 PUT {{alposim_HostAddress}}/api/sale/YOUR-GUID-HERE
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "saleDate": "2026-06-08T15:30:00",
@@ -103,52 +137,120 @@ Content-Type: application/json
 ### Delete Sale
 DELETE {{alposim_HostAddress}}/api/sale/YOUR-GUID-HERE
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
 ### Get Daily Report
 GET {{alposim_HostAddress}}/api/report/daily?date=2026-06-08
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
 ### Get Weekly Report
 GET {{alposim_HostAddress}}/api/report/weekly?month=6&year=2026
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
 ### Get Monthly Report
 GET {{alposim_HostAddress}}/api/report/monthly?year=2026
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
 ### Get Yearly Report
 GET {{alposim_HostAddress}}/api/report/yearly
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
 ### Add Item to Sale
 POST {{alposim_HostAddress}}/api/sale/GUID-HERE/items
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "productId": "YOUR-PRODUCT-GUID",
   "quantity": 2
 }
 
+###
+
 ### Remove Item from Sale
 DELETE {{alposim_HostAddress}}/api/sale/GUID-HERE/items/ITEM-GUID-HERE
+Authorization: Bearer {{token}}
+
+###
 
 ### Update Item Quantity
 PATCH {{alposim_HostAddress}}/api/sale/GUID-HERE/items/ITEM-GUID-HERE
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "quantity": 5
 }
+
+###
+
+
+### Get All Categories
+GET {{alposim_HostAddress}}/api/category
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Get Category by Name
+GET {{alposim_HostAddress}}/api/category/Electronics
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Get Category by ID
+GET {{alposim_HostAddress}}/api/category/YOUR-GUID-HERE
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Create Category
+POST {{alposim_HostAddress}}/api/category
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Electronics"
+}
+
+###
+
+### Update Category
+PUT {{alposim_HostAddress}}/api/category/YOUR-GUID-HERE
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Updated Category Name"
+}
+
+###
+
+### Delete Category
+DELETE {{alposim_HostAddress}}/api/category/YOUR-GUID-HERE
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+
+
 
 
 

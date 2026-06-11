@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<Sale> Sales {get; set;}
     public DbSet<SaleItem> SaleItems {get; set;}
     public DbSet<User> Users {get; set;}
+    public DbSet<Category> Categories { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
 
@@ -29,6 +30,9 @@ public class AppDbContext : DbContext
             .WithMany(si => si.Items)
             .HasForeignKey(si => si.SaleId)
             .OnDelete(DeleteBehavior.Cascade);
+
+            
+            
         
     }
 

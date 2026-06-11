@@ -6,6 +6,7 @@
 
     namespace alposim.Controllers
     {
+        [Authorize]
         [Route("api/[controller]")]
         [ApiController]
         public class ReportController : Controller

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace alposim.Controllers  
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
 
@@ -18,13 +19,13 @@ namespace alposim.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Employee")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Product>))]
         public async Task<IActionResult> GetProducts()
         {  
             var products = await productRepository.GetAllProductsAsync();
             return Ok(products);
         }
+        
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Employee")]
         [ProducesResponseType(200, Type = typeof(Product))]
@@ -36,6 +37,17 @@ namespace alposim.Controllers
 
             return Ok(prod);
         }
+
+        [HttpGet("name/{name}")]
+        [Authorize(Roles = "Admin,Employee")]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<Product>))]
+        public async Task<IActionResult> SearchProducts(string name)
+        {
+            var prod = await productRepository.GetProductByNameAsync(name);
+            if (prod == null) return NotFound();
+            return Ok(prod);
+        }
+        
         [HttpPost]
         [Authorize(Roles = "Admin,Employee")]
         [ProducesResponseType(201, Type = typeof(Product))]

@@ -117,7 +117,7 @@ namespace alposim.Repository
                 throw new InvalidOperationException($"Insufficient stock for {product.Name}");
             
             saleItem.SaleId = saleId;
-            saleItem.RetailPrice = product.OriginalPrice;
+            saleItem.CostPrice = product.OriginalPrice;
             saleItem.UnitPrice = product.SellingPrice;
             saleItem.TotalPrice = product.SellingPrice * saleItem.Quantity;            
             sale.Items.Add(saleItem);

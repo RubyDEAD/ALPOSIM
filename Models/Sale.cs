@@ -25,7 +25,7 @@ namespace alposim.Models
         public Guid SaleId {get; set;}
         public Guid ProductId {get; set;}
         public int Quantity {get; set;}
-        public decimal RetailPrice { get; set; }
+        public decimal CostPrice { get; set; }
         public decimal UnitPrice {get; set;} //Equivalent to SellingPrice
         public decimal TotalPrice {get; set;}
     }

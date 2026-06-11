@@ -15,8 +15,8 @@ namespace alposim.Repository
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
-        
-        public AuthRepository(AppDbContext context,  IConfiguration configuration)
+
+        public AuthRepository(AppDbContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
@@ -37,7 +37,7 @@ namespace alposim.Repository
 
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
+                expires: DateTime.UtcNow.AddMinutes(30),
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
             );
             return new JwtSecurityTokenHandler().WriteToken(token);
@@ -50,7 +50,7 @@ namespace alposim.Repository
 
             if (!BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
                 throw new UnauthorizedAccessException("Invalid Token");
-            
+
             return new AuthResponseDto
             {
                 Token = GenerateToken(user),
@@ -61,15 +61,15 @@ namespace alposim.Repository
 
         public async Task<User> Register(RegisterDto registerDto)
         {
-            if(await UserExists(registerDto.Username)) throw new InvalidOperationException("Username already exists!");
+            if (await UserExists(registerDto.Username)) throw new InvalidOperationException("Username already exists!");
             var user = new User
             {
-                Id = new Guid(),
+                Id = Guid.NewGuid(),
                 Username = registerDto.Username,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
                 Role = registerDto.Role
 
-            }; 
+            };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
             return user;
@@ -79,6 +79,7 @@ namespace alposim.Repository
         {
             return await _context.Users.AnyAsync(u => u.Username == username);
         }
-        
     }
 }
+        
+    

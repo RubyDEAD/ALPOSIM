@@ -2,6 +2,7 @@ using alposim.Models;
 using alposim.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using alposim.Data;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace alposim.Repository
 {
@@ -41,7 +42,14 @@ namespace alposim.Repository
         {
             return await _context.Products.FindAsync(id);
         }
-
+        
+        public async Task<Product> GetProductByNameAsync(string name)
+        {
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.Name == name);
+            if (product == null) return null;
+            return product;
+        }
+        
         public async Task<Product> CreateProductAsync(Product product)
         {
             var productCode = await GenerateProductCodeAsync();
