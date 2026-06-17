@@ -11,8 +11,9 @@ namespace alposim.Controllers
     [ApiController]
 
     public class ProductController : Controller
-    {   
+    {
         private readonly IProductRepository productRepository;
+
         public ProductController(IProductRepository productRepository)
         {
             this.productRepository = productRepository;
@@ -21,11 +22,11 @@ namespace alposim.Controllers
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Product>))]
         public async Task<IActionResult> GetProducts()
-        {  
+        {
             var products = await productRepository.GetAllProductsAsync();
             return Ok(products);
         }
-        
+
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Employee")]
         [ProducesResponseType(200, Type = typeof(Product))]
@@ -47,33 +48,36 @@ namespace alposim.Controllers
             if (prod == null) return NotFound();
             return Ok(prod);
         }
-        
+
         [HttpPost]
         [Authorize(Roles = "Admin,Employee")]
         [ProducesResponseType(201, Type = typeof(Product))]
         public async Task<IActionResult> CreateProduct([FromBody] Product product)
         {
 
-            if(!ModelState.IsValid || product == null)
+            if (!ModelState.IsValid || product == null)
             {
                 return BadRequest(ModelState);
             }
+
             var prod = await productRepository.CreateProductAsync(product);
 
-            return CreatedAtAction(nameof(GetProductById), new { id = prod.Id}, prod);
+            return CreatedAtAction(nameof(GetProductById), new { id = prod.Id }, prod);
         }
+
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Employee")]
         public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] Product product)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+
             var updatedProduct = await productRepository.UpdateProductAsync(id, product);
             if (updatedProduct == null) return NotFound();
 
-           
+
             return Ok(updatedProduct);
         }
 
@@ -85,6 +89,26 @@ namespace alposim.Controllers
             if (deletedProduct == null) return NotFound();
 
             return Ok(deletedProduct);
+        }
+
+        [HttpGet("status/{status}")]
+        [Authorize(Roles = "Admin,Employee")]
+        public async Task<IActionResult> GetProductsByStatus(ProductStatus status)
+        {
+            var products = await productRepository.GetProductsByStatusAsync(status);
+            return Ok(products);
+        }
+
+        [HttpGet("category/{category}")]
+        [Authorize(Roles = "Admin,Employee")]
+        public async Task<IActionResult> GetProductsByCategory(String category)
+        {
+            
+            var products = await productRepository.GetProductsByCategoryAsync(category);
+            if(products == null) return BadRequest(products);
+            
+            return Ok(products);
+            
         }
     }
 }

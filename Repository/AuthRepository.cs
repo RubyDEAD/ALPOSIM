@@ -13,10 +13,10 @@ namespace alposim.Repository
 
     public class AuthRepository : IAuthRepository
     {
-        private readonly AppDbContext _context;
+        private readonly LocalDbContext _context;
         private readonly IConfiguration _configuration;
 
-        public AuthRepository(AppDbContext context, IConfiguration configuration)
+        public AuthRepository(LocalDbContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;

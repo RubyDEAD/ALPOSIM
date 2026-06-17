@@ -7,10 +7,11 @@ namespace alposim.Interfaces
         Task<IEnumerable<Product>> GetAllProductsAsync();
         Task<Product> GetProductByIdAsync(Guid id);
         Task<Product> GetProductByNameAsync(string name);
+        Task<IEnumerable<Product>> GetProductsByStatusAsync(ProductStatus status);
+        Task<IEnumerable<Product>> GetProductsByCategoryAsync(String category);
         Task<Product> CreateProductAsync(Product product);
         Task<Product> UpdateProductAsync(Guid id, Product product);
         Task<Product> DeleteProductAsync(Guid id);
-        
         
     }
 }

@@ -66,11 +66,27 @@ Authorization: Bearer {{token}}
 
 ###
 
+
+
+
 ### Delete Product
 DELETE {{alposim_HostAddress}}/api/product/YOUR-GUID-HERE
 Accept: application/json
 Authorization: Bearer {{token}}
 
+###
+
+
+### Get Products by Category
+GET {{alposim_HostAddress}}/api/Product/category/{{category}}
+Accept: application/json
+Authorization: Bearer {{token}}
+###
+
+### Get Products by Status
+GET {{alposim_HostAddress}}/api/Product/category/{{status}}
+Accept: application/json
+Authorization: Bearer {{token}}
 ###
 
 ### Get All Sales
@@ -249,6 +265,55 @@ Authorization: Bearer {{token}}
 
 ###
 
+
+### Get All Syncs
+GET {{alposim_HostAddress}}/api/sync
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Get Sync by ID
+GET {{alposim_HostAddress}}/api/sync/YOUR-GUID-HERE
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Get Sync Status by ID
+GET {{alposim_HostAddress}}/api/sync/YOUR-GUID-HERE/status
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Get Sync by Date Range
+GET {{alposim_HostAddress}}/api/sync/range?startDate=2026-06-01&endDate=2026-06-30
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Start Sync
+POST {{alposim_HostAddress}}/api/sync/start
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Stop Sync
+POST {{alposim_HostAddress}}/api/sync/stop
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Pull Sync
+POST {{alposim_HostAddress}}/api/sync/pull
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
 
 
 

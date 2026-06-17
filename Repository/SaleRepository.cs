@@ -7,9 +7,9 @@ namespace alposim.Repository
 {
     public class SaleRepository : ISaleRepository
     {
-        private readonly AppDbContext _context;
+        private readonly LocalDbContext _context;
 
-        public SaleRepository(AppDbContext context)
+        public SaleRepository(LocalDbContext context)
         {
             _context = context;
         }

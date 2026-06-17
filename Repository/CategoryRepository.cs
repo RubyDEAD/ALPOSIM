@@ -8,9 +8,9 @@ namespace alposim.Repository
     
     public class CategoryRepository : ICategoryRepository
     {
-        private readonly AppDbContext _context;
+        private readonly LocalDbContext _context;
 
-        public CategoryRepository(AppDbContext context)
+        public CategoryRepository(LocalDbContext context)
         {
             _context = context;
         }

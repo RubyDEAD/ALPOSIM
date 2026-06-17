@@ -8,8 +8,8 @@ namespace alposim.Repository
 {
     public class ProductRepository : IProductRepository
     {
-        private readonly AppDbContext _context;
-        public ProductRepository(AppDbContext context)
+        private readonly LocalDbContext _context;
+        public ProductRepository(LocalDbContext context)
         {
             _context = context;
         }
@@ -73,7 +73,7 @@ namespace alposim.Repository
             existingProduct.SellingPrice = product.SellingPrice;
             existingProduct.Metric = product.Metric;
             existingProduct.UpdatedAt = DateTime.UtcNow;
-
+            existingProduct.MinQuantity = product.MinQuantity;
             await _context.SaveChangesAsync();
             return existingProduct;
 
@@ -105,6 +105,26 @@ namespace alposim.Repository
             return (items, totalCount);
         }
 
+        public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(String category)
+        {
+            var products = await _context.Products
+                .Where(p => p.Category.Name.Contains(category))
+                .ToListAsync();
+
+
+            return products;
+        }
+
+        public async Task<IEnumerable<Product>> GetProductsByStatusAsync(ProductStatus status)
+        {
+
+            var products = await _context.Products.ToListAsync();
+
+            return products
+                .Where(p => p.Status == status);
+        }
+
+     
     }
 
 }
