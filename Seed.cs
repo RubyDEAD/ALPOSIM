@@ -5,7 +5,7 @@ public static class SeedData
 {
     public static void Initialize(AppDbContext context)
     {
-        if (context.Products.Any() || context.Sales.Any())
+        if (context.Products.Any())
         {
             return;
         }
@@ -182,6 +182,7 @@ public static class SeedData
 
         // Sales
         var sales = new List<Sale>
+       
         {
             new()
             {

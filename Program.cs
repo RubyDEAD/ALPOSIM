@@ -100,16 +100,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var localContext = scope.ServiceProvider.GetRequiredService<LocalDbContext>();
-    localContext.Database.Migrate();
-    SeedData.Initialize(localContext);
-
-    var cloudContext = scope.ServiceProvider.GetRequiredService<CloudDbContext>();
-    cloudContext.Database.Migrate();
-    SeedData.Initialize(cloudContext);
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var localContext = scope.ServiceProvider.GetRequiredService<LocalDbContext>();
+//     localContext.Database.Migrate();
+//     SeedData.Initialize(localContext);
+//
+//     // var cloudContext = scope.ServiceProvider.GetRequiredService<CloudDbContext>();
+//     // cloudContext.Database.Migrate();
+//     // SeedData.Initialize(cloudContext);
+// }
 
 if (app.Environment.IsDevelopment())
 {

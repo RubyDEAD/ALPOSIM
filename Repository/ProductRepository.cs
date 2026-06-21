@@ -115,7 +115,7 @@ namespace alposim.Repository
             return products;
         }
 
-        public async Task<IEnumerable<Product>> GetProductsByStatusAsync(ProductStatus status)
+        public async Task<IEnumerable<Product>> GetProductsByStatusAsync(string status)
         {
 
             var products = await _context.Products.ToListAsync();

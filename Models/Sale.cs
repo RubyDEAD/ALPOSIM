@@ -28,5 +28,8 @@ namespace alposim.Models
         public decimal CostPrice { get; set; }
         public decimal UnitPrice {get; set;} //Equivalent to SellingPrice
         public decimal TotalPrice {get; set;}
+        
+        
     }
+    
 }

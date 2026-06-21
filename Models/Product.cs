@@ -15,13 +15,13 @@ namespace alposim.Models
         public int Quantity { get; set; }
 
         [NotMapped]
-        public ProductStatus Status => Quantity
+        public string Status => Quantity
             switch
             {
-                _ when Quantity <= 3 => ProductStatus.Critical,
-                _ when Quantity <= MinQuantity => ProductStatus.Low,
-                _ when Quantity <= MinQuantity * 2 => ProductStatus.Normal,
-                _ => ProductStatus.High
+                _ when Quantity <= 3 => ProductStatusConstants.CRITICAL,
+                _ when Quantity <= MinQuantity => ProductStatusConstants.LOW,
+                _ when Quantity <= MinQuantity * 2 => ProductStatusConstants.NORMAL,
+                _ => ProductStatusConstants.HIGH,
 
             };
         public int MinQuantity { get; set; } = 0;
@@ -30,15 +30,16 @@ namespace alposim.Models
         public String Metric { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
-       
         
     }
 
-    public enum ProductStatus
+    public static class ProductStatusConstants
     {
-        Critical,
-        Low,
-        Normal,
-        High,
+        public const string CRITICAL = "Critical";
+        public const string LOW = "Low";
+        public const string NORMAL = "Normal";
+        public const string HIGH = "High";
     }
+    
+    
 }

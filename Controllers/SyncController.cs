@@ -73,7 +73,7 @@ public class SyncController : ControllerBase
         return Ok(sync);
     }
     [HttpPost("pull")]
-    [Authorize(Roles = "Admin,Employee")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(200, Type = typeof(Sync))]
     public async Task<IActionResult> PullSync()
     {

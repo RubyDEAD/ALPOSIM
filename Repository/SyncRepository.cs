@@ -160,7 +160,8 @@ public class SyncRepository : ISyncRepository
         {
             SyncId = Guid.NewGuid(),
             SyncDate = DateTime.UtcNow,
-            Status = SyncStatus.SyncLoading
+            Status = SyncStatus.SyncLoading,
+            Method =  SyncMethod.Pushed
         };
 
         local.Syncs.Add(sync);
@@ -215,7 +216,8 @@ public class SyncRepository : ISyncRepository
         {
             SyncId = Guid.NewGuid(),
             SyncDate = DateTime.UtcNow,
-            Status = SyncStatus.SyncLoading
+            Status = SyncStatus.SyncLoading,
+            Method = SyncMethod.Pulled,
         };
 
         using var local = _factory.CreateLocal();

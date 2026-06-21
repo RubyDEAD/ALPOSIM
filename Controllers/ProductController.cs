@@ -93,15 +93,18 @@ namespace alposim.Controllers
 
         [HttpGet("status/{status}")]
         [Authorize(Roles = "Admin,Employee")]
-        public async Task<IActionResult> GetProductsByStatus(ProductStatus status)
+        public async Task<IActionResult> GetProductsByStatus([FromRoute] string status)
         {
+            if (!new[] { "Critical", "Low", "Normal", "High" }.Contains(status))
+                return BadRequest("Invalid status. Use: Critical, Low, Normal, High");
+        
             var products = await productRepository.GetProductsByStatusAsync(status);
             return Ok(products);
         }
 
         [HttpGet("category/{category}")]
         [Authorize(Roles = "Admin,Employee")]
-        public async Task<IActionResult> GetProductsByCategory(String category)
+        public async Task<IActionResult> GetProductsByCategory(string category)
         {
             
             var products = await productRepository.GetProductsByCategoryAsync(category);

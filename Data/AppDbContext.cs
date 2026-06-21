@@ -30,9 +30,14 @@ public class AppDbContext : DbContext
             .HasForeignKey(si => si.SaleId)
             .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<Sync>()
+                .Property(s => s.Status)
+                .HasConversion<string>();
             
-            
-        
+            modelBuilder.Entity<Sync>()
+                .Property(s => s.Method)
+                .HasConversion<string>();
+
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
