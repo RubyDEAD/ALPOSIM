@@ -10,7 +10,7 @@ public interface ISyncRepository
     Task<IEnumerable<Sync>> GetSyncByDate(DateTime starDate, DateTime endDate);
     Task<Sync> StartSync();
     Task<Sync> StopSync();
-    Task<SyncStatusDto> GetSyncStatus(Guid id);
+    Task<SyncStatusDto?> GetSyncStatus(Guid id);
     Task<Sync> PullSync();
 
 }

@@ -3,7 +3,7 @@ using alposim.Models;
 using alposim.Interfaces;
 using alposim.Repository;
 using Microsoft.AspNetCore.Authorization;
-
+using alposim.DTO;
 namespace alposim.Controllers  
 {
     [Authorize]
@@ -64,6 +64,28 @@ namespace alposim.Controllers
 
             return CreatedAtAction(nameof(GetProductById), new { id = prod.Id }, prod);
         }
+        
+        [HttpGet("paged")]
+        [Authorize(Roles = "Admin,Employee")]
+        [ProducesResponseType(200, Type = typeof(PagedResult<Product>))]
+        public async Task<IActionResult> GetProductsPaged([FromQuery] int page = 1, [FromQuery] int limit = 15)
+        {
+            if (page < 1 || limit < 1)
+                return BadRequest("Page and limit must be greater than 0.");
+
+            var (items, totalCount) = await productRepository.GetProductsPageAsync(page, limit);
+
+            var result = new PagedResult<Product>
+            {
+                Items = items,
+                PageNumber = page,
+                Limit = limit,
+                TotalCount = totalCount
+            };
+
+            return Ok(result);
+        }
+
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Employee")]

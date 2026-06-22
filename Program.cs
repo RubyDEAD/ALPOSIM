@@ -13,6 +13,7 @@ using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 DotEnv.Load();
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -50,6 +51,7 @@ builder.Services.AddDbContext<LocalDbContext>(options =>
 {
     options.UseNpgsql(LocalConnectionString);
 });
+Console.WriteLine(LocalConnectionString);
 
 builder.Services.AddDbContext<CloudDbContext>(options =>
 {
@@ -98,6 +100,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 // using (var scope = app.Services.CreateScope())
@@ -121,6 +135,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCors("AllowFrontend");
 app.MapControllers();
 
 app.Run();

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("alposim")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+77b97468f907b832444c53040aa35f6493d85b53")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ab3527ec654a10d6d7313a2ce63ab7c01c7de331")]
 [assembly: System.Reflection.AssemblyProductAttribute("alposim")]
 [assembly: System.Reflection.AssemblyTitleAttribute("alposim")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
