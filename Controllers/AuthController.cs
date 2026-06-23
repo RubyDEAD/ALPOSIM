@@ -44,12 +44,37 @@ namespace alposim.Controllers
             try
             {
                 var response = await _authRepository.Login(loginDto);
-                return Ok(response);
+                
+                Response.Cookies.Append("token", response.Token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.Now.AddMinutes(15)
+                });
+
+                var csrfToken = Guid.NewGuid().ToString();
+                Response.Cookies.Append("csrf-token", csrfToken, new CookieOptions
+                {
+                    HttpOnly = false,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddMinutes(15)
+                });
+                
+                return Ok(new { username = response.Username, role = response.Role});
             }
             catch (UnauthorizedAccessException ex)
             {
                 return Unauthorized(ex.Message);
             }
+        }
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("token");
+            Response.Cookies.Delete("csrf-token");
+            return Ok(new { message = "Logged out successfully" });
         }
     }
 }

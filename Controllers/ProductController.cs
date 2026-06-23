@@ -68,12 +68,18 @@ namespace alposim.Controllers
         [HttpGet("paged")]
         [Authorize(Roles = "Admin,Employee")]
         [ProducesResponseType(200, Type = typeof(PagedResult<Product>))]
-        public async Task<IActionResult> GetProductsPaged([FromQuery] int page = 1, [FromQuery] int limit = 15)
+        public async Task<IActionResult> GetProductsPaged(
+            [FromQuery] int page = 1,
+            [FromQuery] int limit = 15,
+            [FromQuery] string? status = null,
+            [FromQuery] string? search = null,
+            [FromQuery] int? categoryId = null)
         {
             if (page < 1 || limit < 1)
                 return BadRequest("Page and limit must be greater than 0.");
 
-            var (items, totalCount) = await productRepository.GetProductsPageAsync(page, limit);
+            var (items, totalCount) = await productRepository.GetProductsPageAsync(
+                page, limit, status, search, categoryId);
 
             var result = new PagedResult<Product>
             {

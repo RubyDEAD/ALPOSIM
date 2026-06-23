@@ -50,7 +50,8 @@ namespace alposim.Repository
 
             if (!BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
                 throw new UnauthorizedAccessException("Invalid Token");
-
+            
+            
             return new AuthResponseDto
             {
                 Token = GenerateToken(user),

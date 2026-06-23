@@ -88,6 +88,16 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
+
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            context.Token = context.Request.Cookies["token"];
+            return Task.CompletedTask;
+        }
+    };
+    
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
@@ -125,6 +135,9 @@ var app = builder.Build();
 //     // SeedData.Initialize(cloudContext);
 // }
 
+app.UseCors("AllowFrontend");
+
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -132,10 +145,33 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.Use(async (context, next) =>
+{
+    var safeMethods = new[] { "GET", "HEAD", "OPTIONS" };
+    var authPaths = new[] { "/api/Auth/login", "/api/Auth/register" };
+    
+    var isAuthPath = authPaths.Any(p => 
+        context.Request.Path.StartsWithSegments(p, StringComparison.OrdinalIgnoreCase));
+
+    if (!safeMethods.Contains(context.Request.Method) && !isAuthPath)
+    {
+        var csrfCookie = context.Request.Cookies["csrf-token"];
+        var csrfHeader = context.Request.Headers["X-CSRF-Token"].ToString();
+
+        if (string.IsNullOrEmpty(csrfCookie) || csrfCookie != csrfHeader)
+        {
+            context.Response.StatusCode = 403;
+            await context.Response.WriteAsync("Invalid CSRF Token");
+            return;
+        }
+    }
+
+    await next();
+});
+
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors("AllowFrontend");
 app.MapControllers();
 
 app.Run();

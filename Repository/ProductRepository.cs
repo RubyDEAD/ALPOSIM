@@ -91,16 +91,31 @@ namespace alposim.Repository
             
         }
 
-        public async Task<(IEnumerable<Product> Items, int TotalCount)> GetProductsPageAsync(int page, int limit)
+        public async Task<(IEnumerable<Product> Items, int TotalCount)> GetProductsPageAsync(
+            int page, int limit, string? status = null, string? search = null, int? categoryId = null)
         {
             var query = _context.Products.AsQueryable();
-            var totalCount = await query.CountAsync();
 
-            var items = await query
-                .OrderBy(p => p.CreatedAt)
+            if (!string.IsNullOrEmpty(search))
+                query = query.Where(p => p.Name.Contains(search) || p.ProductCode.Contains(search));
+
+            if (categoryId.HasValue)
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+
+            // load all matching records first since status is computed
+            var allItems = await query.OrderBy(p => p.CreatedAt).ToListAsync();
+
+            // filter by status in memory
+            if (!string.IsNullOrEmpty(status) && status != "All")
+                allItems = allItems.Where(p => p.Status == status).ToList();
+
+            var totalCount = allItems.Count;
+            var totalPages = (int)Math.Ceiling(totalCount / (double)limit);
+
+            var items = allItems
                 .Skip((page - 1) * limit)
                 .Take(limit)
-                .ToListAsync();
+                .ToList();
 
             return (items, totalCount);
         }
