@@ -1,2 +1,20 @@
+# Build output
+bin/
+obj/
+
+# Rider
+.idea/
+
+# User-specific settings
+*.user
+*.rsuser
+*.suo
+
+# Local environment variables
 .env
-appsettings.json
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.dbN

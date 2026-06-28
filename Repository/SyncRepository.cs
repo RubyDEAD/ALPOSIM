@@ -75,6 +75,33 @@ public class SyncRepository : ISyncRepository
         await cloud.SaveChangesAsync(cancellationToken);
     }
 
+    private async Task SyncProductHistories(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using var local = _factory.CreateLocal();
+        using var cloud = _factory.CreateCloud();
+        
+        var localProductHistories = await local.ProductHistories.ToListAsync(cancellationToken);
+        var cloudProductHistories = await cloud.ProductHistories
+            .Select(pH => pH.Id)
+            .ToListAsync(cancellationToken);
+
+        var toInsert = localProductHistories
+            .Where(pH => !cloudProductHistories.Contains(pH.Id))
+            .ToList();
+        var toUpdate = localProductHistories
+            .Where(pH =>  cloudProductHistories.Contains(pH.Id))
+            .ToList();
+        if (toInsert.Any()) cloud.ProductHistories.AddRange(toInsert);
+        if (toUpdate.Any()) cloud.ProductHistories.UpdateRange(toUpdate);
+        
+        
+
+        await cloud.SaveChangesAsync(cancellationToken);
+        
+    }
+
     private async Task SyncCategories(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -174,6 +201,7 @@ public class SyncRepository : ISyncRepository
             await SyncCategories(_syncCancellationToken.Token);
             await SyncSales(_syncCancellationToken.Token);
             await SyncUsers(_syncCancellationToken.Token);
+            await SyncProductHistories(_syncCancellationToken.Token);
 
             sync.Status = SyncStatus.Synced;
         }
@@ -258,6 +286,18 @@ public class SyncRepository : ISyncRepository
 
             if (salesToInsert.Any()) local.Sales.AddRange(salesToInsert);
             if (salesToUpdate.Any()) local.Sales.UpdateRange(salesToUpdate);
+            
+            
+            //pull product_histories
+            var cloudProductHistories = await cloud.ProductHistories.ToListAsync();
+            var localProductHistoryIds = await local.ProductHistories.Select(s => s.Id).ToListAsync();
+
+            var ProductHistoriesToInsert = cloudProductHistories.Where(s => !localProductHistoryIds.Contains(s.Id)).ToList();
+            var ProductHistoriesToUpdate = cloudProductHistories.Where(s => localProductHistoryIds.Contains(s.Id)).ToList();
+
+            if (ProductHistoriesToInsert.Any()) local.Sales.AddRange(salesToInsert);
+            if (ProductHistoriesToUpdate.Any()) local.Sales.UpdateRange(salesToUpdate);
+            
 
             await local.SaveChangesAsync();
             sync.Status = SyncStatus.Synced;
