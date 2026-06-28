@@ -95,14 +95,14 @@ namespace alposim.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Employee")]
-        public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] Product product)
+        public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] Product product, string changedBy)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var updatedProduct = await productRepository.UpdateProductAsync(id, product);
+            var updatedProduct = await productRepository.UpdateProductAsync(id, product, changedBy);
             if (updatedProduct == null) return NotFound();
 
 

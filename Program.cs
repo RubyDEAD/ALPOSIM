@@ -64,6 +64,7 @@ builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<ISyncRepository, SyncRepository>();
+builder.Services.AddScoped<IProductHistoryRepository, ProductHistoryRepository>();
 
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();

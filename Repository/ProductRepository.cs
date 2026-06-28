@@ -58,25 +58,81 @@ namespace alposim.Repository
             await _context.SaveChangesAsync();
             return product;
         }
-
-        public async Task<Product> UpdateProductAsync(Guid id, Product product)
+        
+        public async Task<Product?> UpdateProductAsync(Guid id, Product product, string changedBy = "Unknown")
         {
-            var existingProduct = await _context.Products.FindAsync(id);
-            if (existingProduct == null)
-            {
-                return null;
-            }
-            existingProduct.Name = product.Name;
-            existingProduct.ImageUrl = product.ImageUrl;
-            existingProduct.Quantity = product.Quantity;
-            existingProduct.OriginalPrice = product.OriginalPrice;
-            existingProduct.SellingPrice = product.SellingPrice;
-            existingProduct.Metric = product.Metric;
-            existingProduct.UpdatedAt = DateTime.UtcNow;
-            existingProduct.MinQuantity = product.MinQuantity;
-            await _context.SaveChangesAsync();
-            return existingProduct;
+            var existing = await _context.Products.FindAsync(id);  // ✅ use _context directly
+            if (existing == null) return null;
 
+            var histories = new List<ProductHistory>();
+
+            if (existing.SellingPrice != product.SellingPrice)
+                histories.Add(new ProductHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = id,
+                    FieldChanged = "SellingPrice",
+                    OldValue = existing.SellingPrice.ToString(),
+                    NewValue = product.SellingPrice.ToString(),
+                    Action = "Updated",
+                    ChangedBy = changedBy,
+                    ChangedAt = DateTime.UtcNow
+                });
+
+            if (existing.Quantity != product.Quantity)
+                histories.Add(new ProductHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = id,
+                    FieldChanged = "Quantity",
+                    OldValue = existing.Quantity.ToString(),
+                    NewValue = product.Quantity.ToString(),
+                    Action = existing.Quantity < product.Quantity ? "Restocked" : "Adjusted",
+                    ChangedBy = changedBy,
+                    ChangedAt = DateTime.UtcNow
+                });
+
+            if (existing.OriginalPrice != product.OriginalPrice)
+                histories.Add(new ProductHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = id,
+                    FieldChanged = "OriginalPrice",
+                    OldValue = existing.OriginalPrice.ToString(),
+                    NewValue = product.OriginalPrice.ToString(),
+                    Action = "Updated",
+                    ChangedBy = changedBy,
+                    ChangedAt = DateTime.UtcNow
+                });
+
+            if (existing.Name != product.Name)
+                histories.Add(new ProductHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = id,
+                    FieldChanged = "Name",
+                    OldValue = existing.Name,
+                    NewValue = product.Name,
+                    Action = "Updated",
+                    ChangedBy = changedBy,
+                    ChangedAt = DateTime.UtcNow
+                });
+
+            existing.Name = product.Name;
+            existing.SellingPrice = product.SellingPrice;
+            existing.OriginalPrice = product.OriginalPrice;
+            existing.Quantity = product.Quantity;
+            existing.CategoryId = product.CategoryId;
+            existing.ImageUrl = product.ImageUrl;
+            existing.Metric = product.Metric;
+            existing.MinQuantity = product.MinQuantity;
+            existing.UpdatedAt = DateTime.UtcNow;
+
+            if (histories.Any())
+                _context.ProductHistories.AddRange(histories);
+
+            await _context.SaveChangesAsync();
+            return existing;
         }
 
         public async Task<Product> DeleteProductAsync(Guid id)
@@ -102,10 +158,8 @@ namespace alposim.Repository
             if (categoryId.HasValue)
                 query = query.Where(p => p.CategoryId == categoryId.Value);
 
-            // load all matching records first since status is computed
             var allItems = await query.OrderBy(p => p.CreatedAt).ToListAsync();
 
-            // filter by status in memory
             if (!string.IsNullOrEmpty(status) && status != "All")
                 allItems = allItems.Where(p => p.Status == status).ToList();
 

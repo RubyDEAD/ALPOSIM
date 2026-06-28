@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<User> Users {get; set;}
     public DbSet<Category> Categories { get; set; }
     public DbSet<Sync> Syncs { get; set; }
+    public DbSet<ProductHistory>  ProductHistories { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
 

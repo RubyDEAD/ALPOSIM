@@ -48,7 +48,7 @@ namespace alposim.Controllers
                 Response.Cookies.Append("token", response.Token, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = true,
+                    Secure = false,
                     SameSite = SameSiteMode.Strict,
                     Expires = DateTimeOffset.Now.AddMinutes(15)
                 });
@@ -57,7 +57,7 @@ namespace alposim.Controllers
                 Response.Cookies.Append("csrf-token", csrfToken, new CookieOptions
                 {
                     HttpOnly = false,
-                    Secure = true,
+                    Secure = false,
                     SameSite = SameSiteMode.Strict,
                     Expires = DateTimeOffset.UtcNow.AddMinutes(15)
                 });
