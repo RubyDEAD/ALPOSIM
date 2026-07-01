@@ -24,10 +24,11 @@ namespace alposim.Models
         public Guid Id {get; set;}
         public Guid SaleId {get; set;}
         public Guid ProductId {get; set;}
+        public string Name { get; set; } = string.Empty;
         public int Quantity {get; set;}
         public decimal CostPrice { get; set; }
         public decimal UnitPrice {get; set;} //Equivalent to SellingPrice
-        [NotMapped] public decimal TotalPrice => UnitPrice * Quantity;
+        public decimal TotalPrice { get; set; }
 
 
     }

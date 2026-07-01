@@ -92,33 +92,147 @@ namespace alposim.Repository
 
         public async Task<Sale> CreateSale(Sale sale)
         {
-            sale.SaleCode = await GenerateSaleCodeAsync();
-            sale.CreatedAt = DateTime.UtcNow;
-            _context.Sales.Add(sale);
-            await _context.SaveChangesAsync();
-            return sale;
+            using var transaction = await _context.Database.BeginTransactionAsync();
 
+            try
+            {
+                foreach (var item in sale.Items)
+                {
+                    var product = await _context.Products
+                        .FirstOrDefaultAsync(p => p.Id == item.ProductId);
+
+                    if (product == null) 
+                        throw new KeyNotFoundException($"Product Not found {item.ProductId}");
+
+                    if (product.Quantity < item.Quantity)
+                        throw new InvalidOperationException("Insufficient Product Stock for " +
+                                                            $"product {product.Name}. Available: {product.Quantity}, Requested: {item.Quantity}");
+
+                    item.CostPrice = product.OriginalPrice;
+                    item.UnitPrice = product.SellingPrice;
+                    item.Name = product.Name;
+                    item.TotalPrice = product.SellingPrice * item.Quantity;
+                    item.Id = Guid.NewGuid();
+                    product.Quantity -= item.Quantity;
+                }
+
+                sale.TotalPrice = sale.Items.Sum(i => i.UnitPrice * i.Quantity);
+                sale.Id = Guid.NewGuid();
+                sale.SaleCode = await GenerateSaleCodeAsync();
+                sale.CreatedAt = DateTime.UtcNow;
+                sale.ModifiedAt = DateTime.UtcNow;
+                
+                if (sale.ReceivedCash < sale.TotalPrice)
+                {
+                    throw new InvalidOperationException(
+                        $"Insufficient cash. Total: {sale.TotalPrice}, Received: {sale.ReceivedCash}");
+                }
+
+                _context.Sales.Add(sale);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return sale;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
-        public async Task<Sale> UpdateSale(Guid id, Sale sale)
+        public async Task<Sale> UpdateSale(Guid id, Sale updatedSale)
         {
-            var existingSale = await _context.Sales.FindAsync(id);
-            if (DateTime.UtcNow < existingSale.CreatedAt.AddMinutes(3))
-                throw new InvalidOperationException("Sale can only be edited within 3 minutes of creation.");
-            if (existingSale == null) return null;
-
-            existingSale.TotalPrice = sale.TotalPrice;
-            existingSale.OnlinePayment = sale.OnlinePayment;
-            existingSale.ModifiedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-            return existingSale;
+            using var transaction = await _context.Database.BeginTransactionAsync();
             
+            try
+            {
+                var existingSale = await _context.Sales
+                    .Include(s => s.Items)
+                    .FirstOrDefaultAsync(s => s.Id == id);
+                
+                if (existingSale == null)
+                    throw new KeyNotFoundException($"Sale {id} not found");
+                
+                if (DateTime.UtcNow > existingSale.CreatedAt.AddMinutes(3))
+                    throw new InvalidOperationException("Sale can only be edited within 3 minutes of creation.");
+                
+                // Restore stock for existing items
+                foreach (var existingItem in existingSale.Items)
+                {
+                    var product = await _context.Products
+                        .FirstOrDefaultAsync(p => p.Id == existingItem.ProductId);
+                    
+                    if (product != null)
+                    {
+                        product.Quantity += existingItem.Quantity;
+                    }
+                }
+                
+                // Clear existing items
+                existingSale.Items.Clear();
+                
+                // Process new items
+                foreach (var newItem in updatedSale.Items)
+                {
+                    var product = await _context.Products
+                        .FirstOrDefaultAsync(p => p.Id == newItem.ProductId);
+                    
+                    if (product == null)
+                        throw new KeyNotFoundException($"Product {newItem.ProductId} not found");
+                    
+                    if (product.Quantity < newItem.Quantity)
+                        throw new InvalidOperationException(
+                            $"Insufficient stock for {product.Name}. Available: {product.Quantity}, Requested: {newItem.Quantity}");
+                    
+                    var saleItem = new SaleItem
+                    {
+                        Id = Guid.NewGuid(),
+                        SaleId = id,
+                        ProductId = newItem.ProductId,
+                        Quantity = newItem.Quantity,
+                        CostPrice = product.OriginalPrice,
+                        UnitPrice = product.SellingPrice
+                    };
+                    
+                    product.Quantity -= newItem.Quantity;
+                    existingSale.Items.Add(saleItem);
+                }
+                
+                existingSale.TotalPrice = existingSale.Items.Sum(i => i.UnitPrice * i.Quantity);
+                existingSale.ReceivedCash = updatedSale.ReceivedCash;
+                existingSale.OnlinePayment = updatedSale.OnlinePayment;
+                existingSale.ModifiedAt = DateTime.UtcNow;
+                
+                if (existingSale.OnlinePayment != true && existingSale.ReceivedCash < existingSale.TotalPrice)
+                {
+                    throw new InvalidOperationException(
+                        $"Insufficient cash. Total: {existingSale.TotalPrice}, Received: {existingSale.ReceivedCash}");
+                }
+                
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                
+                return existingSale;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task DeleteSale(Guid id)
         {
-            var sale =  await _context.Sales.FindAsync(id);
-            if (sale == null) return ;
+            var sale = await _context.Sales.FindAsync(id);
+            
+            // ✅ FIX: Check null FIRST before using
+            if (sale == null) 
+                return;
+            
+            if (DateTime.UtcNow > sale.CreatedAt.AddMinutes(3))
+                throw new InvalidOperationException($"Sale Code: {sale.SaleCode} cannot be deleted anymore.");
+            
             _context.Sales.Remove(sale);
             await _context.SaveChangesAsync();
         }
@@ -128,173 +242,6 @@ namespace alposim.Repository
             return await _context.Sales
                 .Where(s => s.CreatedAt >= startDate && s.CreatedAt <= endDate)
                 .SumAsync(s => s.TotalPrice);
-        }
-        public async Task AddItemAsync(Guid saleId, SaleItem saleItem)
-        {
-            // Use a transaction to ensure data consistency
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            
-            try
-            {
-                var sale = await _context.Sales
-                    .Include(s => s.Items)
-                    .FirstOrDefaultAsync(s => s.Id == saleId);
-                
-                if (sale == null) 
-                    throw new KeyNotFoundException($"Sale {saleId} not found");
-                
-                // Check if sale is already completed/cancelled (optional)
-                // if (sale.IsCompleted) throw new InvalidOperationException("Cannot modify completed sale");
-                
-                var product = await _context.Products
-                    .FirstOrDefaultAsync(p => p.Id == saleItem.ProductId);
-                
-                if (product == null) 
-                    throw new KeyNotFoundException($"Product {saleItem.ProductId} not found");
-                
-                // Validate quantity
-                if (saleItem.Quantity <= 0)
-                    throw new ArgumentException("Quantity must be greater than 0");
-                    
-                if (product.Quantity < saleItem.Quantity)
-                    throw new InvalidOperationException($"Insufficient stock for {product.Name}. Available: {product.Quantity}, Requested: {saleItem.Quantity}");
-                
-                // Check if item already exists in sale
-                var existingItem = sale.Items.FirstOrDefault(i => i.ProductId == saleItem.ProductId);
-                if (existingItem != null)
-                {
-                    // Option 1: Update quantity instead
-                    var newQuantity = existingItem.Quantity + saleItem.Quantity;
-                    if (product.Quantity < newQuantity)
-                        throw new InvalidOperationException($"Insufficient stock for {product.Name}. Available: {product.Quantity}, Requested: {newQuantity}");
-                    
-                    product.Quantity -= saleItem.Quantity;
-                    existingItem.Quantity = newQuantity;
-                }
-                else
-                {
-                    // Add new item
-                    saleItem.Id = Guid.NewGuid(); // Ensure new GUID
-                    saleItem.SaleId = saleId;
-                    saleItem.CostPrice = product.OriginalPrice;
-                    saleItem.UnitPrice = product.SellingPrice;
-                    
-                    sale.Items.Add(saleItem);
-                    product.Quantity -= saleItem.Quantity;
-                }
-                
-                // Recalculate total
-                sale.TotalPrice = sale.Items.Sum(i => i.UnitPrice * i.Quantity);
-                sale.ModifiedAt = DateTime.UtcNow;
-                
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
-        }
-
-        public async Task RemoveItemAsync(Guid saleId, Guid saleItemId)
-        {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-    
-            try
-            {
-                var sale = await _context.Sales
-                    .Include(s => s.Items)
-                    .FirstOrDefaultAsync(s => s.Id == saleId);
-
-                if (sale == null) 
-                    throw new KeyNotFoundException($"Sale {saleId} not found");
-        
-                var saleItem = sale.Items.FirstOrDefault(i => i.Id == saleItemId);
-                if (saleItem == null) 
-                    throw new KeyNotFoundException($"Sale Item {saleItemId} not found");
-
-                var product = await _context.Products
-                    .FirstOrDefaultAsync(p => p.Id == saleItem.ProductId);
-        
-                if (product == null) 
-                    throw new KeyNotFoundException($"Product {saleItem.ProductId} not found");
-
-                // Restore product quantity
-                product.Quantity += saleItem.Quantity;
-        
-                // Remove item
-                sale.Items.Remove(saleItem);
-        
-                // Recalculate total
-                sale.TotalPrice = sale.Items.Sum(i => i.UnitPrice * i.Quantity);
-                sale.ModifiedAt = DateTime.UtcNow;
-        
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
-        }
-
-        public async Task UpdateItemQuantityAsync(Guid saleId, Guid saleItemId, int quantity)
-        {
-            if (quantity <= 0)
-                throw new ArgumentException("Quantity must be greater than 0");
-    
-            using var transaction = await _context.Database.BeginTransactionAsync();
-    
-            try
-            {
-                var sale = await _context.Sales
-                    .Include(s => s.Items)
-                    .FirstOrDefaultAsync(s => s.Id == saleId);
-        
-                if (sale == null) 
-                    throw new KeyNotFoundException($"Sale {saleId} not found");
-        
-                var saleItem = sale.Items.FirstOrDefault(i => i.Id == saleItemId);
-                if (saleItem == null) 
-                    throw new KeyNotFoundException($"Sale Item {saleItemId} not found");
-
-                var product = await _context.Products
-                    .FirstOrDefaultAsync(p => p.Id == saleItem.ProductId);
-        
-                if (product == null) 
-                    throw new KeyNotFoundException($"Product {saleItem.ProductId} not found");
-
-                var difference = quantity - saleItem.Quantity;
-        
-                if (difference > 0)
-                {
-                    // Increasing quantity - check stock
-                    if (product.Quantity < difference)
-                        throw new InvalidOperationException(
-                            $"Insufficient stock for {product.Name}. Available: {product.Quantity}, Additional needed: {difference}");
-            
-                    product.Quantity -= difference;
-                }
-                else if (difference < 0)
-                {
-                    // Decreasing quantity - return to stock
-                    product.Quantity += Math.Abs(difference);
-                }
-        
-                saleItem.Quantity = quantity;
-                sale.TotalPrice = sale.Items.Sum(i => i.UnitPrice * i.Quantity);
-                sale.ModifiedAt = DateTime.UtcNow;
-        
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
         }
     }
 }

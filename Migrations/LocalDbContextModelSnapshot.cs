@@ -165,6 +165,10 @@ namespace alposim.Migrations
                     b.Property<decimal>("CostPrice")
                         .HasColumnType("numeric");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
 

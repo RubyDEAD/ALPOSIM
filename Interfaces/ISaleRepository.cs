@@ -20,12 +20,7 @@ namespace alposim.Interfaces
 
         //Aggs
         Task<decimal> GetTotalRevenueByDateRange(DateTime startDate, DateTime endDate);
-
-
-        //Item Management
-        Task AddItemAsync(Guid saleId, SaleItem saleItem);
-        Task RemoveItemAsync(Guid saleId, Guid saleItemId);
-        Task UpdateItemQuantityAsync(Guid saleId, Guid saleItemId, int quantity);
+        
 
     }
 
