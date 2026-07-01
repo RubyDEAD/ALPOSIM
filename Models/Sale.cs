@@ -27,9 +27,9 @@ namespace alposim.Models
         public int Quantity {get; set;}
         public decimal CostPrice { get; set; }
         public decimal UnitPrice {get; set;} //Equivalent to SellingPrice
-        public decimal TotalPrice {get; set;}
-        
-        
+        [NotMapped] public decimal TotalPrice => UnitPrice * Quantity;
+
+
     }
     
 }
