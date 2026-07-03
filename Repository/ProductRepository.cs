@@ -59,9 +59,9 @@ namespace alposim.Repository
             return product;
         }
         
-        public async Task<Product?> UpdateProductAsync(Guid id, Product product, string changedBy = "Unknown")
+        public async Task<Product?> UpdateProductAsync(Guid id, Product product, string changedBy)
         {
-            var existing = await _context.Products.FindAsync(id);  // ✅ use _context directly
+            var existing = await _context.Products.FindAsync(id); 
             if (existing == null) return null;
 
             var histories = new List<ProductHistory>();
@@ -153,23 +153,23 @@ namespace alposim.Repository
             var query = _context.Products.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
-                query = query.Where(p => p.Name.Contains(search) || p.ProductCode.Contains(search));
+                query = query.Where(p =>
+                    EF.Functions.ILike(p.Name, $"%{search}%") ||
+                    EF.Functions.ILike(p.ProductCode, $"%{search}%"));
+
+            if (!string.IsNullOrEmpty(status) && status != "All")
+                query = query.Where(p => p.Status == status);
 
             if (categoryId.HasValue)
                 query = query.Where(p => p.CategoryId == categoryId.Value);
 
-            var allItems = await query.OrderBy(p => p.CreatedAt).ToListAsync();
+            var totalCount = await query.CountAsync();
 
-            if (!string.IsNullOrEmpty(status) && status != "All")
-                allItems = allItems.Where(p => p.Status == status).ToList();
-
-            var totalCount = allItems.Count;
-            var totalPages = (int)Math.Ceiling(totalCount / (double)limit);
-
-            var items = allItems
+            var items = await query
+                .OrderBy(p => p.CreatedAt)
                 .Skip((page - 1) * limit)
                 .Take(limit)
-                .ToList();
+                .ToListAsync();
 
             return (items, totalCount);
         }

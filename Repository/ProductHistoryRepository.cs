@@ -13,7 +13,15 @@ public class ProductHistoryRepository : IProductHistoryRepository
     {
         _context = context;
     }
-    
+
+
+    public async Task<IEnumerable<ProductHistory>> GetProductHistories()
+    {
+        return await _context.ProductHistories
+            .OrderByDescending(h => h.ChangedAt)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<ProductHistory>> GetProductHistoryAsync(Guid productId)
     {
         return await _context.ProductHistories
