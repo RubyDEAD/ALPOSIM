@@ -74,6 +74,7 @@ namespace alposim.Repository
                     FieldChanged = "SellingPrice",
                     OldValue = existing.SellingPrice.ToString(),
                     NewValue = product.SellingPrice.ToString(),
+                    ProductCode = product.ProductCode,
                     Action = "Updated",
                     ChangedBy = changedBy,
                     ChangedAt = DateTime.UtcNow
@@ -88,6 +89,7 @@ namespace alposim.Repository
                     OldValue = existing.Quantity.ToString(),
                     NewValue = product.Quantity.ToString(),
                     Action = existing.Quantity < product.Quantity ? "Restocked" : "Adjusted",
+                    ProductCode = existing.ProductCode,
                     ChangedBy = changedBy,
                     ChangedAt = DateTime.UtcNow
                 });
@@ -100,6 +102,7 @@ namespace alposim.Repository
                     FieldChanged = "OriginalPrice",
                     OldValue = existing.OriginalPrice.ToString(),
                     NewValue = product.OriginalPrice.ToString(),
+                    ProductCode = existing.ProductCode,
                     Action = "Updated",
                     ChangedBy = changedBy,
                     ChangedAt = DateTime.UtcNow
@@ -113,6 +116,7 @@ namespace alposim.Repository
                     FieldChanged = "Name",
                     OldValue = existing.Name,
                     NewValue = product.Name,
+                    ProductCode = existing.ProductCode,
                     Action = "Updated",
                     ChangedBy = changedBy,
                     ChangedAt = DateTime.UtcNow

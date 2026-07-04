@@ -9,6 +9,7 @@ public class ProductHistory
     public Guid ProductId { get;  set; }
     public string FieldChanged { get; set; } = string.Empty;
     public string OldValue { get; set; } = string.Empty;
+    public string ProductCode { get; set; } = string.Empty;
     public string NewValue { get; set; } = string.Empty;
     public string Action { get; set; } = string.Empty;
     public string ChangedBy { get; set; } = string.Empty;
