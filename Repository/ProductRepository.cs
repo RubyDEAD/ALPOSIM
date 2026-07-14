@@ -149,7 +149,7 @@ namespace alposim.Repository
     
             return product;
             
-        }
+        } 
 
         public async Task<(IEnumerable<Product> Items, int TotalCount)> GetProductsPageAsync(
             int page, int limit, string? status = null, string? search = null, int? categoryId = null)
@@ -160,20 +160,22 @@ namespace alposim.Repository
                 query = query.Where(p =>
                     EF.Functions.ILike(p.Name, $"%{search}%") ||
                     EF.Functions.ILike(p.ProductCode, $"%{search}%"));
-
-            if (!string.IsNullOrEmpty(status) && status != "All")
-                query = query.Where(p => p.Status == status);
+            
 
             if (categoryId.HasValue)
                 query = query.Where(p => p.CategoryId == categoryId.Value);
 
-            var totalCount = await query.CountAsync();
+            var allItems = await query.OrderBy(p => p.CreatedAt).ToListAsync();
 
-            var items = await query
-                .OrderBy(p => p.CreatedAt)
+            if (!string.IsNullOrEmpty(status) && status != "All")
+                allItems = allItems.Where(p => p.Status == status).ToList();
+
+            var totalCount = allItems.Count;
+
+            var items = allItems
                 .Skip((page - 1) * limit)
                 .Take(limit)
-                .ToListAsync();
+                .ToList();
 
             return (items, totalCount);
         }

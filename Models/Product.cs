@@ -15,15 +15,27 @@ namespace alposim.Models
         public int Quantity { get; set; }
 
         [NotMapped]
-        public string Status => Quantity
-            switch
+        public string Status
+        {
+            get
             {
-                _ when Quantity <= 3 => ProductStatusConstants.CRITICAL,
-                _ when Quantity <= MinQuantity => ProductStatusConstants.LOW,
-                _ when Quantity <= MinQuantity * 2 => ProductStatusConstants.NORMAL,
-                _ => ProductStatusConstants.HIGH,
+                if (Quantity == 0) return ProductStatusConstants.CRITICAL;
+                if (Quantity <= 3) return ProductStatusConstants.CRITICAL;
 
-            };
+                if (MinQuantity > 0)
+                {
+                    if (Quantity <= MinQuantity) return ProductStatusConstants.LOW;
+                    if (Quantity <= MinQuantity * 2) return ProductStatusConstants.NORMAL;
+                    return ProductStatusConstants.HIGH;
+                }
+
+
+                if (Quantity <= 5) return ProductStatusConstants.LOW;
+                if (Quantity <= 20) return ProductStatusConstants.NORMAL;
+                return ProductStatusConstants.HIGH;
+            }
+        }
+        
         public int MinQuantity { get; set; } = 0;
         public decimal OriginalPrice { get; set; }
         public decimal SellingPrice { get; set; }

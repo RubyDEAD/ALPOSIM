@@ -65,9 +65,11 @@ namespace alposim.Repository
 
         public async Task<(IEnumerable<Sale> Items, int TotalCount)> GetSalesPageAync(int page, int limit, string? saleCode, bool? payment, DateTime? startDate = null, DateTime? endDate = null)
         {
-            var query = _context.Sales.AsQueryable();
+            var query = _context.Sales
+                .Include(s => s.Items)
+                .AsQueryable();
             if (!string.IsNullOrEmpty(saleCode))
-                query = query.Where(q => q.SaleCode.Contains(saleCode));
+                query = query.Where(q => EF.Functions.ILike(q.SaleCode, $"%{saleCode}%"));
 
             if (payment != null)
                 query = query.Where(q => q.OnlinePayment == payment);
@@ -80,9 +82,9 @@ namespace alposim.Repository
             var allItems = await query.OrderByDescending(p => p.CreatedAt).ToListAsync();
 
             var totalCount = allItems.Count;
-            var totalPages = (int)Math.Ceiling((double)totalCount / limit);
 
             var items = allItems
+                .OrderByDescending(i => i.CreatedAt)
                 .Skip((page - 1) * limit)
                 .Take(limit)
                 .ToList();
